@@ -5,15 +5,15 @@
 #include <iostream>
 
 const float pi = 3.141592653589;
-const float GRAVITY_MERCURY = 3.7f;  
-const float GRAVITY_VENUS = 8.87f;   
-const float GRAVITY_EARTH = 9.81f;  
-const float GRAVITY_MARS = 3.71f;    
-const float GRAVITY_JUPITER = 24.79f;
-const float GRAVITY_SATURN = 10.44f; 
-const float GRAVITY_URANUS = 8.69f;  
-const float GRAVITY_NEPTUNE = 11.15f;
-const float GRAVITY_PLUTO = 0.62f;
+const float GRAVITY_MERCURY = 3.7f * 100;
+const float GRAVITY_VENUS = 8.87f * 100;
+const float GRAVITY_EARTH = 9.810f * 100;
+const float GRAVITY_MARS = 3.71f * 100;
+const float GRAVITY_JUPITER = 24.79f * 100;
+const float GRAVITY_SATURN = 10.44f * 100;
+const float GRAVITY_URANUS = 8.69f * 100;
+const float GRAVITY_NEPTUNE = 11.15f * 100;
+const float GRAVITY_PLUTO = 0.62f * 100;
 
 void drawShape(int screenX,int screenY, float radius, int noSides) {
     glBegin(GL_TRIANGLE_FAN);
@@ -53,23 +53,47 @@ int main() {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, 800, 800);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glOrtho(0, 800, 800, 0, -1, 1); 
-    std::vector<float> Earthposition = { 400.0f,300.0f };
-    std::vector<float> Earthvelocity = { 0.0f,0.0f };
-    std::vector<float> Plutoposition = { 400.0f,300.0f };
-    std::vector<float> Plutovelocity = { 0.0f,0.0f };
+    glOrtho(0, screenX, screenY, 0, -1, 1); 
+
+    float radius = 50.0f;
+    float positionY = 300.0f;
+    float velocityY = 0.0f;
+    float groundLevel = 1500.0f;
+
+    float lastTime = glfwGetTime();
+    float debugTimer = 0.0f;
+    int collisionCount = 0;
 
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);  
-        drawShape(1200.0f, Earthposition[1], 50.0f, 100);//EARTH BALL
-        drawShape(600.0f, Plutoposition[1], 50.0f, 100);// PLUTO BALL
-        Plutovelocity[0] += GRAVITY_PLUTO;
-        Plutoposition[1] += Plutovelocity[0];
-        Earthvelocity[0] += GRAVITY_EARTH;
-        Earthposition[1] += Earthvelocity[0];
-        glfwSwapBuffers(window);  
-        glfwPollEvents();  
+        float currentTime = glfwGetTime();
+        float dt = currentTime - lastTime;
+        lastTime = currentTime;
+        debugTimer += dt;
+
+        glClear(GL_COLOR_BUFFER_BIT);
+        drawShape(screenX / 2.0f, positionY, radius, 100);
+
+        velocityY += GRAVITY_EARTH * dt;
+        positionY += velocityY * dt;
+
+        if (positionY >= groundLevel) {
+            positionY = groundLevel;
+            velocityY *= -0.7f;
+            collisionCount++;
+        }
+
+        if (debugTimer >= 0.01f) { // every 10ms
+            std::cout << "Time: " << currentTime
+                << "s | Y-Position: " << positionY
+
+                << " | Collisions: " << collisionCount << "\n";
+            debugTimer = 0.0f;
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
+
 
     glfwDestroyWindow(window);
     glfwTerminate();
