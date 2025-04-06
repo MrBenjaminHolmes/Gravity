@@ -17,19 +17,21 @@ const float GRAVITY_SATURN = 10.44f;
 const float GRAVITY_URANUS = 8.69f;
 const float GRAVITY_NEPTUNE = 11.15f;
 const float GRAVITY_PLUTO = 0.62f;
-
+int collisionCount = 0;
 
 class Object {
 public:
     std::vector<float> position;
     std::vector<float> velocity;
     float radius;
+    float mass;
     std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f };
-    Object(std::vector<float> position, std::vector<float> velocity, float radius = 15.0f, std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f }) {
+    Object(std::vector<float> position, std::vector<float> velocity, float radius = 15.0f, std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f },float mass = 0.0f) {
         this->position = position;
         this->velocity = velocity;
         this->radius = radius;
         this->colour = colour;
+        this->mass = mass;
     }
     void accelerate(float x, float y) {
         this->velocity[0] += x;
@@ -68,7 +70,10 @@ public:
 
             other.velocity[0] = speed1 * cos(angle + pi);
             other.velocity[1] = speed1 * sin(angle + pi);
+            collisionCount++;
         }
+        
+
     }
     void checkCollisions(std::vector<Object>& objs) {
         for (auto& other : objs) {
@@ -104,12 +109,8 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glOrtho(0, 800, 800, 0, -1, 1);
     std::vector<Object> objs = {
-        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f}),
-        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
-        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
-        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f})
-        Object(std::vector<float>{400.0f,400.0f},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
-        Object(std::vector<float>{400.0f,500.0f},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f}),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
 
     };
     float arrowForce = 0.5f;
@@ -136,7 +137,7 @@ int main() {
 
         for (auto& obj : objs) {
             
-            obj.accelerate(0.00f, GRAVITY_EARTH / 12.0f);
+            obj.accelerate(0.00f, GRAVITY_JUPITER / 12.0f);
 
             obj.accelerate(forceX, forceY);
 
@@ -163,6 +164,7 @@ int main() {
 
             obj.drawShape();
         }
+        std::cout << int(collisionCount) << std::endl;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
