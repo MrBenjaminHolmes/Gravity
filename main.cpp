@@ -72,7 +72,7 @@ public:
     }
     void checkCollisions(std::vector<Object>& objs) {
         for (auto& other : objs) {
-            if (&other != this) {  // Skip collision with itself
+            if (&other != this) {  
                 collision(other);
             }
         }
@@ -104,40 +104,58 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glOrtho(0, 800, 800, 0, -1, 1);
     std::vector<Object> objs = {
-        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f}),
-        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
-        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
-        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f})
-
-
+        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f}),
+        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
+        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
+        //Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f})
+        Object(std::vector<float>{400.0f,400.0f},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
+        Object(std::vector<float>{400.0f,500.0f},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
 
     };
+    float arrowForce = 0.5f;
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+        float forceX = 0.0f;
+        float forceY = 0.0f;
+
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            forceY -= arrowForce;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            forceY += arrowForce;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            forceX -= arrowForce;
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            forceX += arrowForce;
+        }
+
         for (auto& obj : objs) {
-            obj.accelerate(0.00f, GRAVITY_JUPITER  / 12.0f);
+            
+            obj.accelerate(0.00f, GRAVITY_EARTH / 12.0f);
+
+            obj.accelerate(forceX, forceY);
+
             obj.updatePos();
             obj.checkCollisions(objs);
 
-
-            //Bottom Bounds
+            // Wall collision bounds
             if (obj.position[1] <= 0) {
                 obj.position[1] = 0;
                 obj.velocity[1] *= -0.98;
             }
-            //Top Bounds
             if (obj.position[1] >= screenY) {
                 obj.position[1] = screenY;
                 obj.velocity[1] *= -0.98;
             }
-            //Left Bounds
             if (obj.position[0] <= 0) {
                 obj.position[0] = 0;
                 obj.velocity[0] *= -0.98;
             }
-            //Right Bounds
             if (obj.position[0] >= screenX) {
                 obj.position[0] = screenX;
                 obj.velocity[0] *= -0.98;
