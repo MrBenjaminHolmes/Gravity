@@ -17,7 +17,6 @@ const float GRAVITY_SATURN = 10.44f;
 const float GRAVITY_URANUS = 8.69f;
 const float GRAVITY_NEPTUNE = 11.15f;
 const float GRAVITY_PLUTO = 0.62f;
-int collisionCount = 0;
 
 class Object {
 public:
@@ -84,6 +83,7 @@ public:
     }
 };
 
+
 int main() {
     srand(static_cast<unsigned>(time(0)));
     if (!glfwInit()) {
@@ -107,7 +107,13 @@ int main() {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, 800, 800);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glOrtho(0, 800, 800, 0, -1, 1);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0 + panX, 800 + panX, 800 + panY, 0 + panY, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+
     std::vector<Object> objs = {
         Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f}),
         Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f}),
@@ -117,7 +123,37 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
+        glOrtho(0 + panX, 800 + panX, 800 + panY, 0 + panY, -1, 1);
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
 
+        // Detect middle mouse press/release
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+            if (!isPanning) {
+                isPanning = true;
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+            }
+            else {
+                double deltaX = mouseX - lastMouseX;
+                double deltaY = mouseY - lastMouseY;
+
+                panX += static_cast<float>(deltaX);
+                panY += static_cast<float>(deltaY);
+
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+            }
+        }
+        else {
+            isPanning = false;
+        }
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0 + panX, 800 + panX, 800 + panY, 0 + panY, -1, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
 
         float forceX = 0.0f;
         float forceY = 0.0f;
