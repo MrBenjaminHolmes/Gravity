@@ -2,7 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <vector>
+#include <array>
+#include <ctime> 
 #include <iostream>
+#include <cstdlib>
 
 const float pi = 3.141592653589;
 const float GRAVITY_MERCURY = 3.7f;
@@ -20,11 +23,15 @@ class Object {
     public:
         std::vector<float> position;
         std::vector<float> velocity;
+        float gravity;
         float radius;
-        Object(std::vector<float> position, std::vector<float> velocity, float radius =15.0f) {
+        std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f};
+        Object(std::vector<float> position, std::vector<float> velocity, float radius = 15.0f, std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f }, float gravity = 0.0f) {
             this->position = position;
             this->velocity = velocity;
             this->radius = radius;
+            this->colour = colour;
+            this->gravity = gravity;
         }
         void accelerate(float x, float y) {
             this->velocity[0] += x;
@@ -35,6 +42,7 @@ class Object {
             this->position[1] += this->velocity[1];
         }
         void drawShape() {
+            glColor3f(colour[0], colour[1], colour[2]);
             glBegin(GL_TRIANGLE_FAN);
 
             glVertex2f(this->position[0], this->position[1]);
@@ -51,6 +59,7 @@ class Object {
 };
 
 int main() {
+    srand(static_cast<unsigned>(time(0)));
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
@@ -74,16 +83,18 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glOrtho(0, 800, 800, 0, -1, 1);
     std::vector<Object> objs = {
-        Object(std::vector<float>{200.0f,500.0f},std::vector<float>{5.0f,0.0f}),
-        Object(std::vector<float>{700.0f,500.0f},std::vector<float>{5.0f,0.0f})
+        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{1.0f, 0.0f, 0.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{1.0f, 1.0f, 0.0f},GRAVITY_PLUTO),
+        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{0.0f, 0.0f, 1.0f},GRAVITY_JUPITER)
     };
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
         for (auto& obj : objs) {
-            obj.accelerate(0.0f, 0.981);
+            obj.accelerate(0.0f, obj.gravity/10.0f);
             obj.updatePos();
             obj.drawShape();
+            
             //Bottom Bounds
             if (obj.position[1] <= 0) {
                 obj.position[1] = 0;  
@@ -104,8 +115,7 @@ int main() {
                 obj.position[0] = screenX; 
                 obj.velocity[0] *= -0.98; 
             }
-
-
+          
 
         }
 
