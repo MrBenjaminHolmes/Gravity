@@ -20,42 +20,58 @@ const float GRAVITY_PLUTO = 0.62f;
 
 
 class Object {
-    public:
-        std::vector<float> position;
-        std::vector<float> velocity;
-        float gravity;
-        float radius;
-        std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f};
-        Object(std::vector<float> position, std::vector<float> velocity, float radius = 15.0f, std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f }, float gravity = 0.0f) {
-            this->position = position;
-            this->velocity = velocity;
-            this->radius = radius;
-            this->colour = colour;
-            this->gravity = gravity;
-        }
-        void accelerate(float x, float y) {
-            this->velocity[0] += x;
-            this->velocity[1] += y;
-        }
-        void updatePos() {
-            this->position[0] += this->velocity[0];
-            this->position[1] += this->velocity[1];
-        }
-        void drawShape() {
-            glColor3f(colour[0], colour[1], colour[2]);
-            glBegin(GL_TRIANGLE_FAN);
+public:
+    std::vector<float> position;
+    std::vector<float> velocity;
+    float gravity;
+    float radius;
+    std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f };
+    Object(std::vector<float> position, std::vector<float> velocity, float radius = 15.0f, std::array<float, 3> colour = { 0.0f, 0.0f, 0.0f }, float gravity = 0.0f) {
+        this->position = position;
+        this->velocity = velocity;
+        this->radius = radius;
+        this->colour = colour;
+        this->gravity = gravity;
+    }
+    void accelerate(float x, float y) {
+        this->velocity[0] += x;
+        this->velocity[1] += y;
+    }
+    void updatePos() {
+        this->position[0] += this->velocity[0];
+        this->position[1] += this->velocity[1];
+    }
+    void drawShape() {
+        glColor3f(colour[0], colour[1], colour[2]);
+        glBegin(GL_TRIANGLE_FAN);
 
-            glVertex2f(this->position[0], this->position[1]);
+        glVertex2f(this->position[0], this->position[1]);
 
-            for (int i = 0; i <= 50; ++i) {
-                float angle = 2.0f * pi * (static_cast<float>(i) / 50);
-                float x = this->position[0] + cos(angle) * radius;
-                float y = this->position[1] + sin(angle) * radius;
-                glVertex2f(x, y);
-            }
-            glEnd();
-
+        for (int i = 0; i <= 50; ++i) {
+            float angle = 2.0f * pi * (static_cast<float>(i) / 50);
+            float x = this->position[0] + cos(angle) * radius;
+            float y = this->position[1] + sin(angle) * radius;
+            glVertex2f(x, y);
         }
+        glEnd();
+    }
+    void collision(Object& other) {
+        float dx = this->position[0] - other.position[0];
+        float dy = this->position[1] - other.position[1];
+        float distance = sqrt((dx * dx) + (dy * dy));
+
+        if (distance < this->radius + other.radius)
+        {
+            float angle = atan2(dy, dx);
+            float speed1 = sqrt(this->velocity[0] * this->velocity[0] + this->velocity[1] * this->velocity[1]);
+            float speed2 = sqrt(other.velocity[0] * other.velocity[0] + other.velocity[1] * other.velocity[1]);
+            this->velocity[0] = speed2 * cos(angle);
+            this->velocity[1] = speed2 * sin(angle);
+
+            other.velocity[0] = speed1 * cos(angle + pi);
+            other.velocity[1] = speed1 * sin(angle + pi);
+        }
+    }
 };
 
 int main() {
@@ -83,40 +99,77 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glOrtho(0, 800, 800, 0, -1, 1);
     std::vector<Object> objs = {
-        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{1.0f, 0.0f, 0.0f},GRAVITY_EARTH),
-        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{1.0f, 1.0f, 0.0f},GRAVITY_PLUTO),
-        Object(std::vector<float>{float(rand() % 801), float(rand() % 801)},std::vector<float>{5.0f, 0.0f},15.0f,std::array<float, 3>{0.0f, 0.0f, 1.0f},GRAVITY_JUPITER)
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256)/255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH),
+        Object(std::vector<float>{float(rand() % 801),float(rand() % 801)},std::vector<float>{0.0f, 0.0f},15.0f,std::array<float, 3>{float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f, float(rand() % 256) / 255.0f},GRAVITY_EARTH)
+
+
+
     };
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        for (size_t i = 0; i < objs.size(); ++i) {
+            for (size_t j = i + 1; j < objs.size(); ++j) {
+                objs[i].collision(objs[j]);
+            }
+        }
+
         for (auto& obj : objs) {
-            obj.accelerate(0.0f, obj.gravity/10.0f);
+            obj.accelerate(-0.10f, obj.gravity / 12.0f);
             obj.updatePos();
-            obj.drawShape();
-            
+
+
             //Bottom Bounds
             if (obj.position[1] <= 0) {
-                obj.position[1] = 0;  
-                obj.velocity[1] *= -0.98; 
+                obj.position[1] = 0;
+                obj.velocity[1] *= -0.98;
             }
             //Top Bounds
             if (obj.position[1] >= screenY) {
-                obj.position[1] = screenY;  
-                obj.velocity[1] *= -0.98;  
+                obj.position[1] = screenY;
+                obj.velocity[1] *= -0.98;
             }
             //Left Bounds
             if (obj.position[0] <= 0) {
-                obj.position[0] = 0; 
-                obj.velocity[0] *= -0.98; 
+                obj.position[0] = 0;
+                obj.velocity[0] *= -0.98;
             }
             //Right Bounds
             if (obj.position[0] >= screenX) {
-                obj.position[0] = screenX; 
-                obj.velocity[0] *= -0.98; 
+                obj.position[0] = screenX;
+                obj.velocity[0] *= -0.98;
             }
-          
 
+            obj.drawShape();
         }
 
         glfwSwapBuffers(window);
